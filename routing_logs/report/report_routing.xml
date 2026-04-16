@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Routing Audit Report -->
+        <report
+            id="report_routing_audit"
+            model="mrp.routing"
+            string="Routing Audit Report - PDF"
+            name="routing_logs.routing_report"
+            file="routing_logs"
+            report_type="qweb-pdf"/>
+
+        <record id="report_routing_audit" model="ir.actions.report">
+            <field name="attachment_use" eval="False"/>
+            <field name="attachment" eval="False"/>
+        </record>
+
+        <!-- Routing Report Template -->
+        <template id="routing_report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-set="routing" t-value="doc['routing']"/>
+                    <t t-set="audit_logs" t-value="doc['audit_logs']"/>
+                    <div class="article o_report_layout_standard">
+                        <div class="page" style="position: relative;">
+                            <!-- Content -->
+                            <div style="position: relative;">
+                            <!-- Logo and Header Section -->
+                            <div style="margin-bottom: 20px; font-family: Arial; border-bottom: 2px solid #333; padding-bottom: 10px;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="width: 25%; text-align: center; vertical-align: middle;">
+                                            <t t-if="logo_base64">
+                                                <img t-att-src="'data:image/png;base64,%s' % logo_base64" style="max-height: 70px; max-width: 100%;"/>
+                                            </t>
+                                        </td>
+                                        <td style="width: 50%;"></td>
+                                        <td style="width: 25%; text-align: right; vertical-align: middle; padding-right: 10px;">
+                                            <div style="font-size: 16px; font-weight: bold;"><t t-esc="routing.company_id.display_name if routing.company_id else 'N/A'"/></div>
+                                            <div style="font-size: 12px; color: #666;">Routing Audit Report</div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Header Section -->
+                            <div style="margin-bottom: 20px; font-family: Arial;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="width: 33%; padding: 5px 0;"><strong>Routing ID:</strong> <t t-esc="routing.id"/></td>
+                                        <td style="width: 33%; padding: 5px 0;"><strong>Active:</strong> <t t-esc="'Yes' if routing.active else 'No'"/></td>
+                                        <td style="width: 33%; padding: 5px 0;"><strong>Printed Date:</strong> <t t-esc="printed_date"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" style="padding: 5px 0;"><strong>Routing Name:</strong> <t t-esc="routing.name"/></td>
+                                        <td style="padding: 5px 0;"></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Metrics Section -->
+                            <div style="margin-bottom: 20px; font-family: Arial;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="width: 50%; padding: 5px 0;"><strong>Total Operations:</strong> <t t-esc="len(routing.operation_ids)"/></td>
+                                        <td style="width: 50%; padding: 5px 0;"></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- Description Section -->
+                            <div style="margin-bottom: 20px; font-family: Arial;">
+                                <h4 style="font-weight: bold; margin: 10px 0; font-size: 20px;">Description</h4>
+                                <p style="margin: 5px 0; font-size: 12px;"><t t-esc="routing.note or 'No description available'"/></p>
+                            </div>
+
+                            <!-- Edit Logs Section -->
+                            <div style="font-family: Arial;">
+                                <h4 style="font-weight: bold; margin: 10px 0; font-size: 20px;">Edit Logs</h4>
+                                <t t-if="audit_logs">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 15px;">
+                                        <thead>
+                                            <tr style="background-color: #f0f0f0; font-weight: bold; border-bottom: 2px solid #333;">
+                                                <th style="padding: 8px; text-align: left;">Changed On</th>
+                                                <th style="padding: 8px; text-align: left;">Model Type</th>
+                                                <th style="padding: 8px; text-align: left;">Field</th>
+                                                <th style="padding: 8px; text-align: left;">Old Value</th>
+                                                <th style="padding: 8px; text-align: left;">New Value</th>
+                                                <th style="padding: 8px; text-align: left;">Changed By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="audit_logs" t-as="log">
+                                                <tr style="border-bottom: 1px solid #ddd;">
+                                                    <td style="padding: 8px;"><t t-esc="log.changed_date.strftime('%Y-%m-%d %H:%M:%S')"/></td>
+                                                    <td style="padding: 8px;">
+                                                        <t t-if="log.model_id.model == 'mrp.routing'">Routing</t>
+                                                        <t t-elif="log.model_id.model == 'mrp.routing.workcenter'">Operation</t>
+                                                        <t t-else=""><t t-esc="log.model_id.model"/></t>
+                                                    </td>
+                                                    <td style="padding: 8px;"><t t-esc="log.field_name"/></td>
+                                                    <td style="padding: 8px;"><t t-esc="log.old_value or 'N/A'"/></td>
+                                                    <td style="padding: 8px;"><t t-esc="log.new_value or 'N/A'"/></td>
+                                                    <td style="padding: 8px;"><t t-esc="log.changed_by.display_name"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <t t-else="">
+                                    <p style="margin: 10px 0; font-size: 12px;"><em>No changes recorded for this routing.</em></p>
+                                </t>
+                            </div>
+                            </div>
+                            <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 10000; pointer-events: none;">
+                                <div style="position: absolute; top: 50%; left: 50%; white-space: nowrap; -webkit-transform: translate(-50%, -50%) rotate(-45deg); transform: translate(-50%, -50%) rotate(-45deg); -webkit-transform-origin: center; transform-origin: center;">
+                                    <span style="display: inline-block; color: #B3B3B3; opacity: 0.5; font-family: 'Helvetica Neue', 'Liberation Sans', Arial, sans-serif; font-weight: 700; font-size: 64px; letter-spacing: 1px; line-height: 1; margin: 0; padding: 0; user-select: text; -webkit-user-select: text;">TEAM PACIFIC CORPORATION</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
+

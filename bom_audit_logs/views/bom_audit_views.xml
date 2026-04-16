@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_mrp_bom_form_inherit_audit_pdf_button" model="ir.ui.view">
+            <field name="name">mrp.bom.form.inherit.audit.pdf.button</field>
+            <field name="model">mrp.bom</field>
+            <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_print_bom_audit_pdf"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-file-pdf-o"
+                            string="Audit PDF"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
