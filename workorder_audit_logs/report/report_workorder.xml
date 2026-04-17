@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <report
+            id="report_workorder_audit_pdf"
+            model="mrp.workorder"
+            string="Work Order Audit Report - PDF"
+            name="workorder_audit_logs.workorder_audit_report"
+            file="workorder_audit_logs"
+            report_type="qweb-pdf"/>
+
+        <record id="report_workorder_audit_pdf" model="ir.actions.report">
+            <field name="attachment_use" eval="False"/>
+            <field name="attachment" eval="False"/>
+        </record>
+
+        <template id="workorder_audit_report">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-set="workorder" t-value="doc['workorder']"/>
+                    <t t-set="audit_logs" t-value="doc['audit_logs']"/>
+                    <t t-set="logo_base64" t-value="doc['logo_base64']"/>
+
+                    <div class="article o_report_layout_standard">
+                        <div class="page" style="position: relative;">
+                            <div style="position: relative; margin-bottom: 20px; font-family: Arial;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <tr style="border-bottom: 2px solid #333;">
+                                        <td style="width: 25%; text-align: center; vertical-align: middle; padding-bottom: 10px;">
+                                            <t t-if="logo_base64">
+                                                <img t-att-src="'data:image/png;base64,%s' % logo_base64" style="max-height: 70px; max-width: 100%;"/>
+                                            </t>
+                                        </td>
+                                        <td style="width: 50%; padding-bottom: 10px;"></td>
+                                        <td style="width: 25%; text-align: right; vertical-align: middle; padding-right: 10px; padding-bottom: 10px;">
+                                            <div style="font-size: 16px; font-weight: bold;"><t t-esc="workorder.company_id.display_name if workorder.company_id else 'N/A'"/></div>
+                                            <div style="font-size: 12px; color: #666;">Work Order Audit Report</div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 33%; padding: 5px 0;"><strong>Work Order ID:</strong> <t t-esc="workorder.id"/></td>
+                                        <td style="width: 33%; padding: 5px 0;"><strong>State:</strong> <t t-esc="workorder.state or 'N/A'"/></td>
+                                        <td style="width: 33%; padding: 5px 0;"><strong>Printed Date:</strong> <t t-esc="printed_date"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0;"><strong>Work Order:</strong> <t t-esc="workorder.name or 'N/A'"/></td>
+                                        <td style="padding: 5px 0;"><strong>Production Order:</strong> <t t-esc="workorder.production_id.name if workorder.production_id else 'N/A'"/></td>
+                                        <td style="padding: 5px 0;"><strong>Work Center:</strong> <t t-esc="workorder.workcenter_id.display_name if workorder.workcenter_id else 'N/A'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0;"><strong>Operation:</strong> <t t-esc="workorder.operation_id.display_name if workorder.operation_id else 'N/A'"/></td>
+                                        <td style="padding: 5px 0;"><strong>Qty to Produce:</strong> <t t-esc="workorder.qty_production or 0.0"/></td>
+                                        <td style="padding: 5px 0;"><strong>Qty Produced:</strong> <t t-esc="workorder.qty_produced or 0.0"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0;"><strong>Qty Remaining:</strong> <t t-esc="workorder.qty_remaining or 0.0"/></td>
+                                        <td style="padding: 5px 0;"><strong>Planned Start:</strong> <t t-esc="workorder.date_planned_start or 'N/A'"/></td>
+                                        <td style="padding: 5px 0;"><strong>Planned End:</strong> <t t-esc="workorder.date_planned_finished or 'N/A'"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 0;"><strong>Effective Start:</strong> <t t-esc="workorder.date_start or 'N/A'"/></td>
+                                        <td style="padding: 5px 0;"><strong>Effective End:</strong> <t t-esc="workorder.date_finished or 'N/A'"/></td>
+                                        <td style="padding: 5px 0;"></td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div style="position: relative; font-family: Arial;">
+                                <h4 style="font-weight: bold; margin: 10px 0; font-size: 22px;">Audit Logs</h4>
+                                <t t-if="audit_logs">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed;">
+                                        <thead>
+                                            <tr style="background-color: #f0f0f0; font-weight: bold; border-bottom: 2px solid #333;">
+                                                <th style="padding: 8px; text-align: left; width: 18%;">Changed On</th>
+                                                <th style="padding: 8px; text-align: left; width: 18%;">Field</th>
+                                                <th style="padding: 8px; text-align: left; width: 22%;">Old Value</th>
+                                                <th style="padding: 8px; text-align: left; width: 28%;">New Value</th>
+                                                <th style="padding: 8px; text-align: left; width: 14%;">Changed By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="audit_logs" t-as="log">
+                                                <tr style="border-bottom: 1px solid #ddd; vertical-align: top;">
+                                                    <td style="padding: 8px;"><t t-esc="log.changed_date.strftime('%Y-%m-%d %H:%M:%S') if log.changed_date else 'N/A'"/></td>
+                                                    <td style="padding: 8px; word-wrap: break-word;"><t t-esc="log.field_name"/></td>
+                                                    <td style="padding: 8px; word-wrap: break-word;"><t t-esc="log.old_value or 'N/A'"/></td>
+                                                    <td style="padding: 8px; word-wrap: break-word;"><t t-esc="log.new_value or 'N/A'"/></td>
+                                                    <td style="padding: 8px; word-wrap: break-word;"><t t-esc="log.changed_by.display_name"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </t>
+                                <t t-else="">
+                                    <p style="margin: 10px 0; font-size: 12px;"><em>No audit logs recorded yet for this work order.</em></p>
+                                </t>
+                            </div>
+
+                            <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 10000; pointer-events: none;">
+                                <div style="position: absolute; top: 50%; left: 50%; white-space: nowrap; -webkit-transform: translate(-50%, -50%) rotate(-45deg); transform: translate(-50%, -50%) rotate(-45deg); -webkit-transform-origin: center; transform-origin: center;">
+                                    <span style="display: inline-block; color: #B3B3B3; opacity: 0.5; font-family: 'Helvetica Neue', 'Liberation Sans', Arial, sans-serif; font-weight: 700; font-size: 64px; letter-spacing: 1px; line-height: 1; margin: 0; padding: 0; user-select: text; -webkit-user-select: text;">TEAM PACIFIC CORPORATION</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>
